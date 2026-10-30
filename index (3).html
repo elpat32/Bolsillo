@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bolsillo · mis finanzas</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --noche:#1a1236; --panel:#261b4a; --panel2:#30235c; --linea:#43347a;
+    --texto:#f3efff; --suave:#a99fd0;
+    --ingreso:#5ef2c0; --gasto:#ff6b8b; --sol:#ffd86b; --lila:#b9a7ff;
+    --titulo:'Unbounded',system-ui,sans-serif; --cuerpo:'Figtree',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--noche);color:var(--texto);font-family:var(--cuerpo);line-height:1.45;
+       background-image:radial-gradient(circle at 85% -10%,#4a2f9c55,transparent 45%)}
+  main{max-width:1020px;margin:0 auto;padding:22px 16px 70px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .marca{font-family:var(--titulo);font-weight:800;font-size:1.15rem}
+  .marca i{font-style:normal;color:var(--sol)}
+  input,select,button{font:inherit;color:var(--texto)}
+  input,select{background:var(--noche);border:1px solid var(--linea);border-radius:10px;padding:10px 12px;width:100%}
+  input[type=month]{width:auto;padding:7px 10px}
+  button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:700}
+  :focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+
+  .hero{margin:22px 0;display:grid;gap:18px;grid-template-columns:1fr;align-items:center;
+        background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--linea);border-radius:22px;padding:22px}
+  .hero small{color:var(--suave);font-size:.9rem}
+  .balance{font-family:var(--titulo);font-weight:800;font-size:clamp(2rem,9vw,3.6rem);letter-spacing:-.04em;margin:2px 0 6px}
+  .dona{display:flex;align-items:center;gap:14px}
+  .dona svg{width:92px;height:92px;flex:none;transform:rotate(-90deg)}
+  .dona p{margin:0;color:var(--suave);font-size:.92rem}
+  .dona b{color:var(--texto)}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+  .stat{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:12px 14px}
+  .stat span{font-size:.8rem;color:var(--suave)}
+  .stat b{display:block;font-family:var(--titulo);font-weight:500;font-size:1.05rem;margin-top:2px}
+  .ing{color:var(--ingreso)} .gas{color:var(--gasto)}
+
+  .cols{display:grid;gap:18px}
+  @media(min-width:860px){
+    .hero{grid-template-columns:1.3fr 1fr}
+    .stats{grid-template-columns:repeat(4,1fr)}
+    .cols{grid-template-columns:360px 1fr}
+  }
+  .caja{background:var(--panel);border:1px solid var(--linea);border-radius:18px;padding:16px;margin-bottom:18px}
+  .caja h2{font-family:var(--titulo);font-weight:500;font-size:.95rem;margin:0 0 12px}
+
+  form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  form .ancho{grid-column:1/-1}
+  label{font-size:.78rem;color:var(--suave);display:grid;gap:4px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--noche);border-radius:12px;padding:4px;border:1px solid var(--linea)}
+  .seg input{position:absolute;opacity:0;width:0}
+  .seg label{margin:0;text-align:center;padding:9px;border-radius:9px;cursor:pointer;color:var(--suave);font-weight:700;font-size:.9rem}
+  .seg input:checked+label{background:var(--ingreso);color:#0b2a20}
+  .seg input#t2:checked+label{background:var(--gasto);color:#3a0a16}
+  .seg input:focus-visible+label{outline:3px solid var(--sol)}
+  .guardar{background:var(--sol);color:#3b2d00}
+
+  .meta-barra{height:12px;border-radius:99px;background:var(--noche);overflow:hidden;margin:10px 0 6px}
+  .meta-barra div{height:100%;background:linear-gradient(90deg,var(--lila),var(--ingreso));border-radius:99px;transition:width .5s}
+  .meta-fila{display:flex;gap:8px}
+  .meta-fila button{background:var(--panel2)}
+  .nota{font-size:.82rem;color:var(--suave);margin:0}
+
+  .cat{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;margin:8px 0;font-size:.88rem}
+  .cat div{height:10px;border-radius:99px;background:var(--noche);overflow:hidden}
+  .cat div i{display:block;height:100%;background:var(--gasto);border-radius:99px}
+
+  .meses{display:flex;align-items:flex-end;gap:10px;height:130px}
+  .mes{flex:1;display:grid;grid-template-rows:1fr auto;height:100%;text-align:center;font-size:.75rem;color:var(--suave)}
+  .mes .par{display:flex;align-items:flex-end;justify-content:center;gap:4px}
+  .mes .par i{width:42%;border-radius:6px 6px 2px 2px;min-height:3px}
+  .mes .par i:first-child{background:var(--ingreso)} .mes .par i:last-child{background:var(--gasto)}
+
+  .filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .filtros button{background:var(--noche);color:var(--suave);border:1px solid var(--linea);padding:6px 12px;font-size:.82rem}
+  .filtros button[aria-pressed=true]{background:var(--lila);color:#241657;border-color:var(--lila)}
+  .acciones{display:flex;gap:8px;margin-bottom:10px}
+  ul{list-style:none;margin:0;padding:0}
+  li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--linea)}
+  .ico{width:40px;height:40px;border-radius:12px;background:var(--panel2);display:grid;place-items:center;font-size:1.2rem;flex:none}
+  .info{flex:1;min-width:0}
+  .info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .info small{color:var(--suave)}
+  .monto{font-weight:700;text-align:right}
+  .pend{background:none;border:1px dashed var(--sol);color:var(--sol);font-size:.7rem;padding:2px 8px;border-radius:99px;margin-left:6px}
+  .x{background:none;color:var(--suave);padding:4px 8px;font-size:1.25rem}
+  .vacio{color:var(--suave);padding:22px 0;text-align:center}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="marca">Bolsillo<i>.</i></div>
+    <input id="mes" type="month" aria-label="Mes a revisar">
+  </header>
+
+  <section class="hero">
+    <div>
+      <small>Te queda este mes</small>
+      <p class="balance" id="balance">$0</p>
+      <small id="frase">Registra tu primer movimiento para empezar.</small>
+    </div>
+    <div class="dona">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#43347a" stroke-width="4"/>
+        <circle id="arco" cx="18" cy="18" r="15.9" fill="none" stroke="#ff6b8b" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100"/>
+      </svg>
+      <p>Has gastado <b id="pct">0%</b> de lo que recibiste.</p>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><span>Recibido bruto</span><b class="ing" id="bruto">$0</b></div>
+    <div class="stat"><span>Recibido neto</span><b class="ing" id="neto">$0</b></div>
+    <div class="stat"><span>Pagado</span><b class="gas" id="pagado">$0</b></div>
+    <div class="stat"><span>Pendiente</span><b id="pendiente">$0</b></div>
+  </section>
+
+  <div class="cols">
+    <div>
+      <div class="caja">
+        <h2>Nuevo movimiento</h2>
+        <form id="form">
+          <div class="seg ancho">
+            <input type="radio" name="tipo" id="t1" value="recibido" checked><label for="t1">Recibí</label>
+            <input type="radio" name="tipo" id="t2" value="pagado"><label for="t2">Pagué</label>
+          </div>
+          <label class="ancho">Concepto
+            <input id="concepto" required placeholder="Ej: pago del turno, mercado">
+          </label>
+          <label>Monto bruto
+            <input id="monto" type="number" min="0" step="any" required inputmode="decimal">
+          </label>
+          <label>Descuentos
+            <input id="descuento" type="number" min="0" step="any" value="0" inputmode="decimal">
+          </label>
+          <label>Categoría
+            <select id="cat"></select>
+          </label>
+          <label>Fecha
+            <input id="fecha" type="date" required>
+          </label>
+          <label class="ancho">Estado
+            <select id="estado">
+              <option value="listo">Ya ocurrió</option>
+              <option value="pendiente">Pendiente</option>
+            </select>
+          </label>
+          <button class="guardar ancho" type="submit">Guardar movimiento</button>
+        </form>
+      </div>
+
+      <div class="caja">
+        <h2>Meta de ahorro</h2>
+        <div class="meta-fila">
+          <input id="metaIn" type="number" min="0" placeholder="¿Cuánto quieres ahorrar?" inputmode="decimal">
+          <button id="metaBtn" type="button">Fijar</button>
+        </div>
+        <div class="meta-barra"><div id="metaProg" style="width:0"></div></div>
+        <p class="nota" id="metaTxt">Define una meta y mira cómo avanzas con todo lo que has registrado.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="caja">
+        <h2>Últimos 6 meses</h2>
+        <div class="meses" id="meses"></div>
+        <p class="nota" style="margin-top:8px"><span class="ing">●</span> recibido neto &nbsp; <span class="gas">●</span> pagado</p>
+      </div>
+
+      <div class="caja">
+        <h2>En qué se va tu plata</h2>
+        <div id="cats"></div>
+      </div>
+
+      <div class="caja">
+        <h2>Movimientos</h2>
+        <div class="filtros" id="filtros"></div>
+        <div class="acciones">
+          <input id="buscar" placeholder="Buscar concepto…" aria-label="Buscar">
+          <button id="csv" type="button" style="background:var(--panel2)">Exportar CSV</button>
+        </div>
+        <ul id="lista"></ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const CLAVE='bolsillo_movs', CLAVE_META='bolsillo_meta';
+  const CATS={trabajo:['💼','Trabajo'],comida:['🍔','Comida'],transporte:['🚌','Transporte'],estudio:['📚','Estudio'],ocio:['🎮','Ocio'],hogar:['🏠','Hogar'],otros:['✨','Otros']};
+  const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const FILTROS=[['todos','Todos'],['recibido','Recibidos'],['pagado','Pagados'],['pendiente','Pendientes']];
+  const $=id=>document.getElementById(id);
+  const dinero=n=>(n<0?'−':'')+'$'+Math.round(Math.abs(n)).toLocaleString('es-CO');
+  const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function leer(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def}catch(e){return def}}
+  function escribir(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.error(e)}}
+
+  let movs=leer(CLAVE,[]), meta=leer(CLAVE_META,0), filtro='todos';
+  const neto=m=>m.tipo==='recibido'?m.monto-m.descuento:m.monto+m.descuento;
+
+  $('cat').innerHTML=Object.entries(CATS).map(([k,[e,n]])=>`<option value="${k}">${e} ${n}</option>`).join('');
+  $('filtros').innerHTML=FILTROS.map(([k,n])=>`<button type="button" data-f="${k}" aria-pressed="${k==='todos'}">${n}</button>`).join('');
+  const hoy=new Date().toISOString().slice(0,10);
+  $('fecha').value=hoy; $('mes').value=hoy.slice(0,7);
+
+  $('filtros').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    filtro=b.dataset.f;
+    document.querySelectorAll('#filtros button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    pintar();
+  });
+  $('mes').addEventListener('change',pintar);
+  $('buscar').addEventListener('input',pintar);
+
+  $('form').addEventListener('submit',e=>{
+    e.preventDefault();
+    movs.push({id:Date.now(),concepto:$('concepto').value.trim(),
+      tipo:document.querySelector('input[name=tipo]:checked').value,
+      monto:parseFloat($('monto').value)||0,descuento:parseFloat($('descuento').value)||0,
+      cat:$('cat').value,fecha:$('fecha').value,confirmado:$('estado').value==='listo'});
+    escribir(CLAVE,movs);
+    $('concepto').value='';$('monto').value='';$('descuento').value=0;
+    pintar();
+  });
+
+  $('metaBtn').addEventListener('click',()=>{
+    meta=parseFloat($('metaIn').value)||0; escribir(CLAVE_META,meta); pintar();
+  });
+
+  $('csv').addEventListener('click',()=>{
+    const filas=[['fecha','tipo','concepto','categoria','monto','descuento','estado']]
+      .concat(movs.map(m=>[m.fecha,m.tipo,'"'+m.concepto.replace(/"/g,'""')+'"',m.cat,m.monto,m.descuento,m.confirmado?'listo':'pendiente']));
+    const blob=new Blob(['\ufeff'+filas.map(f=>f.join(',')).join('\n')],{type:'text/csv'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mis-finanzas.csv'; a.click();
+  });
+
+  function totales(lista){
+    let bruto=0,n=0,pag=0,pend=0;
+    for(const m of lista){
+      if(m.confirmado){ if(m.tipo==='recibido'){bruto+=m.monto;n+=neto(m)} else pag+=neto(m); }
+      else pend+= m.tipo==='recibido'?neto(m):-neto(m);
+    }
+    return {bruto,n,pag,pend};
+  }
+
+  function pintar(){
+    const mes=$('mes').value;
+    const delMes=movs.filter(m=>m.fecha.startsWith(mes));
+    const t=totales(delMes);
+    $('bruto').textContent=dinero(t.bruto); $('neto').textContent=dinero(t.n);
+    $('pagado').textContent=dinero(t.pag); $('pendiente').textContent=dinero(t.pend);
+    const bal=t.n-t.pag; $('balance').textContent=dinero(bal);
+    const pct=t.n>0?Math.min(100,Math.round(t.pag/t.n*100)):(t.pag>0?100:0);
+    $('pct').textContent=pct+'%'; $('arco').setAttribute('stroke-dasharray',pct+' '+(100-pct));
+    $('frase').textContent=!delMes.length?'Registra tu primer movimiento para empezar.'
+      :bal<0?'Este mes llevas más gastos que ingresos.':pct>80?'Ojo: ya vas gastando casi todo lo que recibes.':'Vas bien, sigue así.';
+
+    // meta de ahorro (acumulado de todos los meses)
+    const total=totales(movs), ahorro=total.n-total.pag;
+    const av=meta>0?Math.max(0,Math.min(100,ahorro/meta*100)):0;
+    $('metaProg').style.width=av+'%';
+    $('metaTxt').textContent=meta>0?`Llevas ${dinero(ahorro)} de ${dinero(meta)} (${Math.round(av)}%).`:'Define una meta y mira cómo avanzas con todo lo que has registrado.';
+
+    // últimos 6 meses
+    const [y,mo]=mes.split('-').map(Number); const cols=[];
+    for(let i=5;i>=0;i--){
+      const d=new Date(y,mo-1-i,1), clave=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      const tt=totales(movs.filter(m=>m.fecha.startsWith(clave)));
+      cols.push({etq:MESES[d.getMonth()],i:tt.n,g:tt.pag});
+    }
+    const max=Math.max(1,...cols.flatMap(c=>[c.i,c.g]));
+    $('meses').innerHTML=cols.map(c=>`<div class="mes"><div class="par"><i style="height:${c.i/max*100}%" title="${dinero(c.i)}"></i><i style="height:${c.g/max*100}%" title="${dinero(c.g)}"></i></div>${c.etq}</div>`).join('');
+
+    // gasto por categoría
+    const porCat={};
+    delMes.filter(m=>m.tipo==='pagado'&&m.confirmado).forEach(m=>porCat[m.cat]=(porCat[m.cat]||0)+neto(m));
+    const lista=Object.entries(porCat).sort((a,b)=>b[1]-a[1]), mx=lista.length?lista[0][1]:1;
+    $('cats').innerHTML=lista.length?lista.map(([k,v])=>`<div class="cat"><span>${CATS[k]?CATS[k][0]+' '+CATS[k][1]:k}</span><div><i style="width:${v/mx*100}%"></i></div><b>${dinero(v)}</b></div>`).join('')
+      :'<p class="nota">Cuando registres pagos, verás aquí en qué categoría gastas más.</p>';
+
+    // movimientos
+    const q=$('buscar').value.trim().toLowerCase();
+    const ver=delMes.filter(m=>(filtro==='todos'||(filtro==='pendiente'?!m.confirmado:m.tipo===filtro))&&m.concepto.toLowerCase().includes(q))
+      .sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.id-a.id);
+    const ul=$('lista');
+    if(!ver.length){ul.innerHTML='<li class="vacio">No hay movimientos para mostrar.</li>';return}
+    ul.innerHTML=ver.map(m=>`<li>
+      <div class="ico">${CATS[m.cat]?CATS[m.cat][0]:'✨'}</div>
+      <div class="info"><span>${esc(m.concepto)}${m.confirmado?'':` <button class="pend" data-ok="${m.id}">pendiente · marcar listo</button>`}</span>
+      <small>${m.fecha}${m.descuento?' · descuentos '+dinero(m.descuento):''}</small></div>
+      <div class="monto ${m.tipo==='recibido'?'ing':'gas'}">${m.tipo==='recibido'?'+':'−'}${dinero(m.monto)}</div>
+      <button class="x" data-del="${m.id}" aria-label="Borrar">×</button></li>`).join('');
+  }
+
+  $('lista').addEventListener('click',e=>{
+    const ok=e.target.dataset.ok, del=e.target.dataset.del;
+    if(ok){const m=movs.find(o=>o.id==ok); if(m){m.confirmado=true}}
+    else if(del){movs=movs.filter(o=>o.id!=del)} else return;
+    escribir(CLAVE,movs); pintar();
+  });
+
+  pintar();
+</script>
+</body>
+</html>
